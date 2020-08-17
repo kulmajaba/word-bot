@@ -1,0 +1,26 @@
+version: "3.3"
+
+services:
+  visitorbot:
+    build: .
+    env_file: .env
+    depends_on:
+      - db
+    restart: on-failure
+    networks:
+      - backend
+  db:
+    build:
+      context: .
+      dockerfile: ./db/Dockerfile
+    env_file: .env
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    restart: always
+    ports:
+      - 5432:5432
+    networks:
+      - backend
+
+networks:
+  backend:
