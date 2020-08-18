@@ -1,8 +1,9 @@
 # coding: utf-8
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 from os import environ
 from typing import Union
+import csv
 
 from telegram import TelegramError, Update, Bot, InlineKeyboardMarkup, InlineKeyboardButton, CallbackQuery, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import CommandHandler, Updater, CallbackContext, CallbackQueryHandler, MessageHandler, Filters
@@ -74,7 +75,41 @@ def buttons(update: Update, context: CallbackContext):
   msg = strings[lang]["buttons"]
   bot.send_message(chat_id=chat_id, text=msg, reply_markup=kb)
 
-def button(update: Update, context: CallbackContext):
+def admin_get_report(update: Update, context: CallbackContext):
+  chat_id, user_id, _ = utils.update_get_ids(update)
+  bot: Bot = context.bot
+
+  lang = db.get_lang(user_id)
+
+  if (lang is None):
+    msg = strings[LangCode.ENGLISH.value]["usestart"]
+    bot.send_message(chat_id=chat_id, text=msg)
+    return
+  
+  if (user_id != tg_admin_id):
+    msg = strings[lang]["noauth"]
+    bot.send_message(chat_id=chat_id, text=msg)
+    return
+  
+  data = db.admin_get_visits()
+
+  filename = "{}-visits-{}.csv".format(organization.strip(' '), date.today().isoformat())
+
+  print(data[0])
+
+  with open(filename, 'w', newline='') as out:
+    csv_out=csv.writer(out, dialect='excel', quotechar='|', escapechar='\\', quoting=csv.QUOTE_NONE)
+    csv_out.writerow(['start time', 'end time', 'name', 'email'])
+    csv_out.writerows(data)
+    
+    out.close()
+  
+  with open(filename, 'rb') as send:
+    bot.send_document(chat_id=chat_id, document=send)
+    send.close()
+
+
+def button_callback(update: Update, context: CallbackContext):
   chat_id, user_id, _ = utils.update_get_ids(update)
   bot: Bot = context.bot
 
@@ -189,7 +224,8 @@ def handlers(updater):
   dp.add_handler(CommandHandler('help', help))
   dp.add_handler(CommandHandler('buttons', buttons))
   dp.add_handler(CommandHandler('napit', buttons))
-  dp.add_handler(CallbackQueryHandler(button))
+  dp.add_handler(CommandHandler('admin_get_report', admin_get_report))
+  dp.add_handler(CallbackQueryHandler(button_callback))
   dp.add_handler(MessageHandler(Filters.text, message))
 
 def main():
@@ -199,7 +235,10 @@ def main():
   updater.start_polling(poll_interval=2.0)
 
 
+organization = environ["BOT_ORGANIZATION"]
+
 tg_token = environ["TG_TOKEN"]
+tg_admin_id = int(environ["TG_ADMIN_ID"])
 
 db = DatabasePsql()
 

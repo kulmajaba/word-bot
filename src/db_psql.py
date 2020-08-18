@@ -86,6 +86,23 @@ class DatabasePsql:
     conn.close()
 
     return result
+  
+  def admin_get_visits(self):
+    conn = self.open_connection()
+    if conn == False:
+      return
+        
+    cursor = conn.cursor()
+
+    sql = "SELECT start_time, end_time, name, email FROM {0} " \
+          "INNER JOIN {1} ON {0}.user_id = {1}.user_id " \
+          "ORDER BY start_time DESC;"
+
+    cursor.execute(sql.format(self.table_visit, self.table_user))
+    result = cursor.fetchall()
+    conn.close()
+
+    return result
       
   def new_visit(self, user_id, start_time):
     conn = self.open_connection()

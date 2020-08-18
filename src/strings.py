@@ -9,6 +9,7 @@ strings = {
     "email": "Ole hyvä ja kirjoita sähköpostiosoitteesi.",
     "setupdone": "Valmista! Voit käyttää Visitorbottia komennolla /napit",
     "buttons": "Käytä nappeja kirjataksesi käyntisi.",
+    "noauth": "Sinulla ei ole tarvittavaa käyttöoikeutta.",
     "in": "Sisään",
     "out": "Ulos",
     "help": "Näytä napit: /napit\n" \
@@ -30,6 +31,7 @@ strings = {
     "email": "Please write your email address.",
     "setupdone": "All done! You can use the Visitorbot with the command /buttons",
     "buttons": "Use the buttons to enter your visits.",
+    "noauth": "You do not have the required access right.",
     "in": "Enter",
     "out": "Exit",
     "help": "Show buttons: /buttons\n" \
