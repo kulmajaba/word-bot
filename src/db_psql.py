@@ -114,8 +114,12 @@ class DatabasePsql:
           "WHERE user_id = {1};"
 
     cursor.execute(sql.format(self.table_user, user_id))
-    result = cursor.fetchone()[0]
+    result = cursor.fetchone()
+    
     conn.close()
+
+    if (result is not None):
+      result = result[0]
 
     return result
   
