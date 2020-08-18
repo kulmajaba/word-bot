@@ -11,6 +11,10 @@ class LangCode(Enum):
   FINNISH = "fi"
   ENGLISH = "en"
 
+class VisitState(Enum):
+  ENTER = "VisitState_ENTER"
+  EXIT = "VisitState_EXIT"
+
 class NewUser:
   current_question: QuestionState = QuestionState.LANG
   lang: Union[LangCode, None] = None
