@@ -4,7 +4,7 @@ strings = {
     "usestart": "Start using the bot with the command /start.",
     "notregistered": "You have not registered to this bot yet. Complete the registration or use the command /start.",
     "usebuttons": "Please use the buttons or valid commands.",
-    "changelang": "You can change the language to Finnish with the command /setlang fi and to Eglish with the command /setlang en.",
+    "changelang": "You can change the language to Finnish with the command /setlang fi and to English with the command /setlang en.",
     "name": "Please write your first and last name.",
     "sthwrong": "Something went wrong.",
     "email": "Please write your email address.",
