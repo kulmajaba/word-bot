@@ -338,7 +338,7 @@ def button_callback(update: Update, context: CallbackContext):
   
   new_users[user_id].set_lang(data)
 
-  msg = "{}\n\n{}".format(strings[LangCode.ENGLISH.value]["changelang"], strings[lang]["name"])
+  msg = "{} {}\n\n{}".format(strings[LangCode.FINNISH.value]["changelang"], strings[LangCode.ENGLISH.value]["changelang"], strings[data]["name"])
 
   query.edit_message_text(text=msg)
 
@@ -400,7 +400,7 @@ def message(update: Update, context: CallbackContext):
       bot.send_message(chat_id=chat_id, text=msg)
       return
 
-    if (not utils.check_update_is_email(update, context)):
+    if (not utils.check_update_is_email(update)):
       msg = "{} {}".format(strings[lang]["sthwrong"], strings[lang]["email"])
       bot.send_message(chat_id=chat_id, text=msg)
       return
