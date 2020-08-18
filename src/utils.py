@@ -2,21 +2,11 @@ import re
 from datetime import datetime
 from os import environ
 
-import pytz
 from pytz import timezone
 from telegram import TelegramError, Update, User
 from telegram.ext import CommandHandler, Updater, CallbackContext
 
-helpSticker = "CAACAgQAAxkBAAEBNhJfOZ8EREBB_eOAMq_mX4jw6u7mYgACHwADkNFAA0p1bXFraxaPGgQ"
-
 tz = timezone(environ["PYTZ_TIMEZONE"])
-
-def printlog(update: Update, msg_type: str):
-  username: User = update.effective_user
-
-  print("Username: ", username,"\nType: ", msg_type)
-
-  print()
 
 def update_get_ids(update: Update):
   """Return chat_id, user_id and message_id if they exist."""

@@ -8,7 +8,7 @@ strings = {
     "name": "Please write your first and last name.",
     "sthwrong": "Something went wrong.",
     "email": "Please write your email address.",
-    "setupdone": "All done! You can use the Visitorbot with the command /buttons",
+    "setupdone": "All done! You can use the Visitorbot with the command /buttons or see the help message by using /help.",
     "buttons": "Use the buttons to enter your visits.",
     "noauth": "You do not have the required access right.",
     "enter": "Enter",
@@ -22,6 +22,7 @@ strings = {
             "Edit your name: /setname Teemu Teekkari\n" \
             "Edit your email address: /setemail teemu.teekkari@esimerkki.fi\n" \
             "Change the language (options fi or en): /setlang en\n" \
+            "Show this message: /help" \
             "Bot code: @kulmajaba",
     "adminmode": "\n\nYou are also designated as the admin of this bot. To get a list of all visits, use command /admin_get_report",
     "infoupdated": "Info updated succesfully."
@@ -36,7 +37,7 @@ strings = {
     "name": "Ole hyvä ja kirjoita etu- ja sukunimesi.",
     "sthwrong": "Jotain meni pieleen.",
     "email": "Ole hyvä ja kirjoita sähköpostiosoitteesi.",
-    "setupdone": "Valmista! Voit käyttää Visitorbottia komennolla /napit",
+    "setupdone": "Valmista! Voit käyttää Visitorbottia komennolla /napit tai näyttää ohjeviestin komennolla /help.",
     "buttons": "Käytä nappeja kirjataksesi käyntisi.",
     "noauth": "Sinulla ei ole tarvittavaa käyttöoikeutta.",
     "enter": "Sisään",
@@ -50,6 +51,7 @@ strings = {
             "Muokkaa nimeäsi: /setname Teemu Teekkari\n" \
             "Muokkaa sähköpostiosoitettasi: /setemail teemu.teekkari@esimerkki.fi\n" \
             "Vaihda kieltä (vaihtoehdot fi tai en): /setlang en\n" \
+            "Näytä tämä viesti: /help" \
             "Botin koodit: @kulmajaba",
     "adminmode": "\n\nSinut on myös merkattu tämän botin adminiksi. Hae lista kaikista käynneistä komennolla /admin_get_report",
     "infoupdated": "Tiedot päivitetty onnistuneesti."

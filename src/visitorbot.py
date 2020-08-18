@@ -1,11 +1,11 @@
 # coding: utf-8
 
 import csv
+import threading
 from datetime import date, datetime, timedelta
 from os import environ
 from typing import Union
 
-import pytz
 from pytz import timezone
 from telegram import (
   Bot,
@@ -73,7 +73,8 @@ def start(update: Update, context: CallbackContext):
       msg = strings[lang][state.value]
       bot.send_message(chat_id=chat_id, text=msg)
       return
-  # User has not started yet, start registration flow
+
+  # Start registration flow
   else:
     new_users[user_id] = NewUser()
 
@@ -171,8 +172,6 @@ def admin_get_report(update: Update, context: CallbackContext):
   data = db.admin_get_visits()
 
   filename = "{}-visits-{}.csv".format(organization.strip(' '), date.today().isoformat())
-
-  print(data[0])
 
   with open(filename, 'w', newline='') as out:
     csv_out=csv.writer(out, dialect='excel', quotechar='|', escapechar='\\', quoting=csv.QUOTE_NONE)
@@ -420,6 +419,24 @@ def message(update: Update, context: CallbackContext):
 
 # -----------------------------------------------------------------------------
 
+def prune():
+  db.delete_old()
+  periodic_pruning()
+
+# Timed delete of old records
+def periodic_pruning():
+  print("Pruning old visits")
+  # every day at 01:00
+  now = datetime.now()
+  next_time = datetime(year=now.year, month=now.month, day=now.day, hour=1, minute=0, second=0) + timedelta(days=1)
+
+  delay = (next_time-now).total_seconds()
+
+  timer = threading.Timer(delay, prune)
+  timer.start()
+
+# -----------------------------------------------------------------------------
+
 def handlers(updater):
   dp = updater.dispatcher
 
@@ -442,6 +459,8 @@ def handlers(updater):
 def main():
   updater = Updater(tg_token, use_context=True)
   handlers(updater)
+
+  periodic_pruning()
 
   updater.start_polling(poll_interval=2.0)
 

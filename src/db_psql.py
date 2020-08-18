@@ -176,6 +176,21 @@ class DatabasePsql:
     conn.commit()
     conn.close()
 
+  def delete_old(self):
+    conn = self.open_connection()
+    if conn == None:
+      print('No DB connection')
+      return
+        
+    cursor = conn.cursor()
+
+    sql = "DELETE FROM {0} " \
+          "WHERE start_time < NOW() - INTERVAL '30 days';"
+
+    cursor.execute(sql.format(self.table_visit))
+
+    conn.commit()
+    conn.close()
 
 if __name__ == "__main__":
   asd = DatabasePsql()
