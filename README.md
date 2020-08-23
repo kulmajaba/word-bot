@@ -5,6 +5,8 @@ Telegram bot for recording visitors to a space.
 * Deletes records older that 30 days automatically
 * Allows a single admin user to get a CSV file containing all visits from the past 30 days via Telegram.
 
+![Demo](https://i.imgur.com/b0jcmE7.gif)
+
 ## Setup
 
 The backend is built using Docker and docker-compose, but should be possible to run without Docker as well. The implementation is done with Python 3.8.5 using PostgreSQL 12
