@@ -2,10 +2,8 @@
 
 Telegram bot for recording visitors to a space.
 * Easy usage through Telegram: register with your name and email, after that use the buttons to sign yourself in or out.
-  - ![Demo 1](https://i.imgur.com/u59mYKo.gif)
 * Deletes records older that 30 days automatically
 * Allows a single admin user to get a CSV file containing all visits from the past 30 days via Telegram.
-  - ![Demo 2](https://i.imgur.com/BHSQa8P.gif)
 
 ## Setup
 
