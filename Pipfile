@@ -4,6 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+python-dotenv = "*"
 python-telegram-bot = "*"
 psycopg2-binary = "*"
 

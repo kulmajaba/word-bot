@@ -1,5 +1,11 @@
 import xml.etree.ElementTree as ET
 import os
+from dotenv import load_dotenv
+
+load_dotenv('../.env')
+
+bot_word = os.environ["WORD"]
+table_word = os.environ["POSTGRES_TABLE_WORD"]
 
 mytree = ET.parse('./kotus-sanalista_v1/kotus-sanalista_v1.xml')
 myroot = mytree.getroot()
@@ -10,7 +16,7 @@ print(len(word_elems))
 words = []
 for word_elem in word_elems:
   text = word_elem.text.lower()
-  if 'ari' in text:
+  if bot_word in text:
     words.append(text)
 
 
@@ -28,7 +34,7 @@ if os.path.exists(target):
 last = len(words) - 1
 
 with open(target, 'a') as word_sql:
-  word_sql.write('INSERT INTO ari_word (word, from_dictionary)\n')
+  word_sql.write('INSERT INTO {} (word, from_dictionary)\n'.format(table_word))
   word_sql.write('VALUES\n')
   for i, word in enumerate(words):
     if i < last:

@@ -11,8 +11,8 @@ class DatabasePsql:
     self.db_host = environ["POSTGRES_HOST"]
     self.db_port = environ["POSTGRES_PORT"]
 
-    self.table_ari_word = environ["POSTGRES_TABLE_WORD"]
-    self.table_ari_word_query = environ["POSTGRES_TABLE_WORD_QUERY"]
+    self.table_word = environ["POSTGRES_TABLE_WORD"]
+    self.table_word_query = environ["POSTGRES_TABLE_WORD_QUERY"]
 
   # Open new DB connection for operation
   def open_connection(self):
@@ -29,7 +29,15 @@ class DatabasePsql:
     else:
       return None
   
-  def search_ari_word(self, word):
+  def search_word(self, word):
+    """Search for a word
+
+    Args:
+        word (String)
+
+    Returns:
+        List<Tuple>: (word, from_dictionary, likeness)
+    """
     conn = self.open_connection()
     if conn == None:
       print('No DB connection')
@@ -42,7 +50,7 @@ class DatabasePsql:
           "ORDER BY similarity DESC, word " \
           "LIMIT 3;"
     
-    cursor.execute(sql.format(word, self.table_ari_word))
+    cursor.execute(sql.format(word, self.table_word))
     result = cursor.fetchall()
     print(result)
 
@@ -50,8 +58,16 @@ class DatabasePsql:
 
     return result
   
-  # Insert new word
-  def insert_ari_word(self, word, from_dictionary):
+  def insert_word(self, word, from_dictionary):
+    """Insert a new word
+
+    Args:
+        word (String)
+        from_dictionary (Boolean): Sets whether the word is from a dictionary or original
+
+    Raises:
+        error: psycopg2.errors.UniqueViolation if the word is already in the database
+    """
     conn = self.open_connection()
     if conn == None:
       print('No DB connection')
@@ -61,7 +77,7 @@ class DatabasePsql:
 
     sql = ""
 
-    if not from_dictionary:
+    if from_dictionary:
       sql = "INSERT INTO {0} (word, from_dictionary) " \
             "VALUES ('{1}', {2});"
     else:
@@ -69,21 +85,28 @@ class DatabasePsql:
             "INSERT INTO {0} (word, from_dictionary) " \
             "VALUES ('{1}', {2}) " \
             "RETURNING id" \
-            ")" \
-            "INSERT INTO {3} (ari_word_id) VALUES ((SELECT id FROM word_insert));"
+            ") " \
+            "INSERT INTO {3} (word_id) VALUES ((SELECT id FROM word_insert));"
     
     try:
-      cursor.execute(sql.format(self.table_ari_word, word, from_dictionary, self.table_ari_word_query))
+      cursor.execute(sql.format(self.table_word, word, from_dictionary, self.table_word_query))
 
       conn.commit()
       conn.close()
 
-      return True
     except psycopg2.errors.UniqueViolation as error:
+      self.increment_word_query_count(word)
       raise error
+  
+  def increment_word_query_count(self, word):
+    """Update word query count
 
-  # Get discovered dictionary words, total dictionary words and total original words
-  def get_ari_word_stats(self):
+    Args:
+        word (String)
+
+    Returns:
+      Query count for the word
+    """
     conn = self.open_connection()
     if conn == None:
       print('No DB connection')
@@ -91,34 +114,54 @@ class DatabasePsql:
     
     cursor = conn.cursor()
 
-    sql_count_found = "SELECT COUNT(id) FROM {0} " \
-                      "INNER JOIN {1} ON {0}.id = {1}.ari_word_id" \
-                      "WHERE from_dictionary = TRUE;"
+    sql = "INSERT INTO {0} (word_id) " \
+          "VALUES ((SELECT id FROM {1} WHERE word = '{2}')) " \
+          "ON CONFLICT (word_id) " \
+          "DO UPDATE SET query_count = {0}.query_count + 1 " \
+          "RETURNING query_count;"
     
-    cursor.execute(sql_count_found.format(self.table_ari_word))
-    result_found = cursor.fetchone()
-    print(result_found)
+    cursor.execute(sql.format(self.table_word_query, self.table_word, word))
 
-    sql_count_unfound = "SELECT COUNT(id) FROM {0} " \
-                        "WHERE from_dictionary = FALSE;"
-    
-    cursor.execute(sql_count_unfound.format(self.table_ari_word))
-    result_unfound = cursor.fetchone()
-    print(result_unfound)
+    result = cursor.fetchone()[0]
 
-    sql_count_unfound = "SELECT COUNT(id) FROM {0} " \
-                        "WHERE from_dictionary = FALSE;"
+    conn.commit()
+    conn.close()
+
+    return result
+
+  def get_stats(self):
+    """Get stats about the discovered and undiscovered words
+
+    Returns:
+      Tuple(words discovered from dictionary, total words in dictionary, words added not in dictionary)
+    """
+    conn = self.open_connection()
+    if conn == None:
+      print('No DB connection')
+      return
     
-    cursor.execute(sql_count_unfound.format(self.table_ari_word))
-    result_unfound = cursor.fetchone()
-    print(result_unfound)
+    cursor = conn.cursor()
+
+    sql_count_found = "SELECT " \
+                      "COUNT({0}.id) FILTER (WHERE from_dictionary = TRUE AND query_count IS NOT NULL) as dict_found_count, " \
+                      "COUNT({0}.id) FILTER (WHERE from_dictionary = TRUE) as dict_total_count, " \
+                      "COUNT({0}.id) FILTER (WHERE from_dictionary = FALSE) as non_dict_count " \
+                      "FROM {0} " \
+                      "LEFT JOIN {1} ON {0}.id = {1}.word_id;"
+    
+    cursor.execute(sql_count_found.format(self.table_word, self.table_word_query))
+    result = cursor.fetchone()
 
     conn.close()
 
     return result
   
-  # Update word query count
-  def upsert_ari_word_query_count(self, word):
+  def get_top_words(self):
+    """Get top searched for words
+
+    Returns:
+      List<Tuple>: (word, from_dictionary, count)
+    """
     conn = self.open_connection()
     if conn == None:
       print('No DB connection')
@@ -126,15 +169,18 @@ class DatabasePsql:
     
     cursor = conn.cursor()
 
-    sql = "INSERT INTO {0} (ari_word_id, query_count) " \
-          "VALUES ((SELECT id FROM {1} WHERE word = {2}), 1) " \
-          "ON CONFLICT ON CONSTRAINT ari_word_id " \
-          "DO UPDATE SET query_count = query_count + 1"
+    sql_count_found = "SELECT word, from_dictionary, query_count " \
+                      "FROM {0} " \
+                      "INNER JOIN {1} ON {0}.id = {1}.word_id " \
+                      "ORDER BY query_count DESC, word ASC " \
+                      "LIMIT 10;"
     
-    cursor.execute(sql.format(self.table_ari_word_query, self.table_ari_word, word))
+    cursor.execute(sql_count_found.format(self.table_word, self.table_word_query))
+    result = cursor.fetchall()
 
-    conn.commit()
     conn.close()
+
+    return result
 
 if __name__ == "__main__":
   asd = DatabasePsql()

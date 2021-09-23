@@ -15,4 +15,4 @@ COPY src /src
 COPY .env /src
 
 # Entry point
-CMD ["python", "aribot.py"]
+CMD ["python", "wordbot.py"]
